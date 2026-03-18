@@ -3,43 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Employee Management</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="container">
-        <div class="form-grp">
-        <div class="inputs">
-            <input type="number" placeholder="Enter ID" id="empId">
-            <input type="text" placeholder="Enter Name" id="empName">
-            <input type="text" placeholder="Enter Department" id="empDept">
-            <input type="number" placeholder="Enter Salary" id="empSalary">
+        <h2>Employee Management System</h2>
+        
+        <div class="form-section">
+            <div class="input-group">
+                <input type="number" placeholder="ID" id="empId">
+                <input type="text" placeholder="Name" id="empName">
+                <input type="text" placeholder="Department" id="empDept">
+                <input type="number" placeholder="Salary" id="empSalary">
+            </div>
             
-        </div>
-        <div class="buttons">
-            <button id="addBtn">Add Employee</button>
-            <button id="displayBtn">Display All</button>
-            <button id="deptCountBtn">Count by Dept</button>
-            <button id="avgSalaryBtn">Avg Salary</button>
-            <button id="salaryFilter">More than 5000</button>
-        </div>
+            <div class="button-group">
+                <button id="addBtn" class="btn-primary">Add Employee</button>
+                <div class="action-grid">
+                    <button id="displayBtn">View All</button>
+                    <button id="deptCountBtn">Dept Count</button>
+                    <button id="avgSalaryBtn">Avg Salary</button>
+                    <button id="salaryFilter">High Pay (>5000)</button>
+                </div>
+            </div>
         </div>
 
-        <div class="details">
-            <p id="info"></p>
-            <table>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Department</th>
-                    <th>Salary</th>
-                </tr>
-                
-
-            </table>
+        <div class="display-section">
+            <p id="info-text"></p>
+            <div class="table-wrapper">
+                <table id="empTable">
+                    <thead>
+                        <tr id="tableHeader">
+                            </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        </tbody>
+                </table>
+            </div>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>

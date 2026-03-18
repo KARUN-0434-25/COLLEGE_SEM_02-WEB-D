@@ -1,119 +1,91 @@
-let empName = document.getElementById("empName");
-let empId = document.getElementById("empId");
-let empDept = document.getElementById("empDept");
-let empSalary = document.getElementById("empSalary");
+const empId = document.getElementById("empId");
+const empName = document.getElementById("empName");
+const empDept = document.getElementById("empDept");
+const empSalary = document.getElementById("empSalary");
+const tableBody = document.getElementById("tableBody");
+const tableHeader = document.getElementById("tableHeader");
+const infoText = document.getElementById("info-text");
 
-let table = document.querySelector("table");
-let info = document.getElementById("info");
-let empData = localStorage.getItem("empData") ? JSON.parse(localStorage.getItem("empData")) : [];
-displayEmployees(empData);
+let empData = JSON.parse(localStorage.getItem("empData")) || [];
+
+function updateTable(headers, data, isSummary = false) {
+    infoText.style.display = "none";
+    
+    tableHeader.innerHTML = headers.map(h => `<th>${h}</th>`).join("");
+    
+    tableBody.innerHTML = data.map(item => {
+        if (isSummary) {
+            return `<tr><td>${item.key}</td><td>${item.val}</td></tr>`;
+        }
+        return `<tr>
+            <td>${item.id}</td>
+            <td>${item.name}</td>
+            <td>${item.dept}</td>
+            <td>$${item.salary}</td>
+        </tr>`;
+    }).join("");
+}
 
 function addEmployee() {
-    let name = empName.value;
-    let id = empId.value;
-    let dept = empDept.value;
-    let salary = empSalary.value;
+    const name = empName.value;
+    const id = empId.value;
+    const dept = empDept.value;
+    const salary = empSalary.value;
 
     if (name && id && dept && salary) {
-        empData.push({ name, id, dept, salary });
+        empData.push({ id, name, dept, salary: parseFloat(salary) });
         localStorage.setItem("empData", JSON.stringify(empData));
-        empName.value = "";
-        empId.value = "";
-        empDept.value = "";
-        empSalary.value = "";
-         displayEmployees(empData);
-
+        
+        [empId, empName, empDept, empSalary].forEach(i => i.value = "");
+        displayAll();
     } else {
-        alert("Please fill in all fields.");
+        alert("Please fill all fields");
     }
-
 }
 
-function initTable(table) {
-    table.innerHTML = `
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Department</th>
-            <th>Salary</th>
-        </tr>
-    `;
-}
-
-function displayEmployees(empData) {
-   initTable(table);
-
-    empData.forEach(emp => {
-        let row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${emp.id}</td>
-            <td>${emp.name}</td>
-            <td>${emp.dept}</td>
-            <td>${emp.salary}</td>
-        `;
-        table.appendChild(row);
-    });
+function displayAll() {
+    updateTable(["ID", "Name", "Department", "Salary"], empData);
 }
 
 document.getElementById("addBtn").addEventListener("click", addEmployee);
-document.getElementById("displayBtn").addEventListener("click", () => displayEmployees(empData));
+document.getElementById("displayBtn").addEventListener("click", displayAll);
 
+document.getElementById("deptCountBtn").addEventListener("click", () => {
+    let counts = {};
+    empData.forEach(e => counts[e.dept] = (counts[e.dept] || 0) + 1);
+    
+    const summaryData = Object.keys(counts).map(k => ({ key: k, val: counts[k] }));
+    updateTable(["Department", "Count"], summaryData, true);
+});
 
-let deptCountBtn = document.getElementById("deptCountBtn");
-deptCountBtn.addEventListener("click", () => {
-    let deptCount = {};
-    empData.forEach(emp => {
-        deptCount[emp.dept] = (deptCount[emp.dept] || 0) + 1;
+document.getElementById("avgSalaryBtn").addEventListener("click", () => {
+    if (empData.length === 0) return;
+    
+    let totals = {};
+    let counts = {};
+    let grandTotal = 0;
+
+    empData.forEach(e => {
+        totals[e.dept] = (totals[e.dept] || 0) + e.salary;
+        counts[e.dept] = (counts[e.dept] || 0) + 1;
+        grandTotal += e.salary;
     });
-    table.innerHTML = `
-        <tr>
-            <th>Department</th>
-            <th>Employee Count</th>
-        </tr>
-    `;
-    for (let dept in deptCount) {
-        let row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${dept}</td>
-            <td>${deptCount[dept]}</td>
-        `;
-        table.appendChild(row);
-    }
+
+    const summaryData = Object.keys(totals).map(k => ({ 
+        key: k, 
+        val: `$${(totals[k] / counts[k]).toFixed(2)}` 
+    }));
+
+    updateTable(["Department", "Average Salary"], summaryData, true);
+    
+    infoText.style.display = "block";
+    infoText.innerHTML = `Company-wide Average: <strong>$${(grandTotal / empData.length).toFixed(2)}</strong>`;
 });
 
-let avgSalaryBtn = document.getElementById("avgSalaryBtn");
-avgSalaryBtn.addEventListener("click", () => {
-    let deptSalary = {};
-    let deptCount = {};
-    let totalSalary = 0;
-    empData.forEach(emp => {
-        totalSalary += parseFloat(emp.salary);
-        deptSalary[emp.dept] = (deptSalary[emp.dept] || 0) + parseFloat(emp.salary);
-        deptCount[emp.dept] = (deptCount[emp.dept] || 0) + 1;
-    });
-    table.innerHTML = `
-        <tr>
-            <th>Department</th>
-            <th>Average Salary</th>
-        </tr>
-    `;
-    for (let dept in deptSalary) {
-        let avgSalary = deptSalary[dept] / deptCount[dept];
-        let row = document.createElement("tr");
-        row.innerHTML = `
-            <td>${dept}</td>
-            <td>${avgSalary.toFixed(2)}</td>
-        `;
-        table.appendChild(row);
-    }
-
-    info.innerHTML  = `Overall Average Salary: <strong> ${(totalSalary / empData.length).toFixed(2)}</strong>`; 
+document.getElementById("salaryFilter").addEventListener("click", () => {
+    const filtered = empData.filter(e => e.salary > 5000);
+    updateTable(["ID", "Name", "Department", "Salary"], filtered);
 });
 
-
-let salaryFilter = document.getElementById("salaryFilter");
-salaryFilter.addEventListener("click", () => {
-    let threshold = 5000;
-    let filteredData = empData.filter(emp => parseFloat(emp.salary) > threshold);
-    displayEmployees(filteredData);
-});
+// Initialize on load
+displayAll();
