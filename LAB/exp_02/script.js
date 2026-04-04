@@ -87,5 +87,5 @@ document.getElementById("salaryFilter").addEventListener("click", () => {
     updateTable(["ID", "Name", "Department", "Salary"], filtered);
 });
 
-// Initialize on load
+
 displayAll();
